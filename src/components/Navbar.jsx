@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, FileSpreadsheet, Plus, KeyRound, LogOut, UserCheck } from 'lucide-react';
+import logoBgn from '../assets/logo-bgn.png';
 
 export default function Navbar({ 
   activeTab, 
@@ -19,7 +20,7 @@ export default function Navbar({
           {/* Logo Resmi Badan Gizi Nasional - Ukuran Pas & Proporsional */}
           <div className="flex items-center">
             <img 
-              src="/logo-bgn.png" 
+              src={logoBgn} 
               alt="Badan Gizi Nasional" 
               className="h-9 sm:h-10 md:h-11 w-auto max-h-11 object-contain transition-all" 
             />

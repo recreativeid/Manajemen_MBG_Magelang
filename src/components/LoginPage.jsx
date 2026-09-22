@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, User, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { loginAdmin } from '../lib/authService';
+import logoBgn from '../assets/logo-bgn.png';
 
 export default function LoginPage({ onLoginSuccess }) {
   const [username, setUsername] = useState('admin');
@@ -32,10 +33,10 @@ export default function LoginPage({ onLoginSuccess }) {
         {/* Card Login */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-100 p-6 sm:p-8">
           
-          {/* Logo Resmi Badan Gizi Nasional - Ukuran Pas */}
+          {/* Logo Resmi Badan Gizi Nasional */}
           <div className="flex flex-col items-center text-center mb-5">
             <img 
-              src="/logo-bgn.png" 
+              src={logoBgn} 
               alt="Badan Gizi Nasional" 
               className="h-12 sm:h-14 w-auto max-h-16 object-contain mb-3" 
             />
@@ -127,12 +128,6 @@ export default function LoginPage({ onLoginSuccess }) {
               )}
             </button>
           </form>
-
-          {/* Catatan Bawah */}
-          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-center space-x-2 text-[11px] text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-            <span>Akses aman terenkripsi peramban lokal & cloud</span>
-          </div>
 
         </div>
 
