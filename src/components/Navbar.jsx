@@ -72,15 +72,15 @@ export default function Navbar({
                 type="button"
                 onClick={() => setShowAdminDropdown(!showAdminDropdown)}
                 className="flex items-center space-x-1.5 px-2.5 py-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
-                title="Menu Admin"
+                title="Menu Akun"
               >
-                <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
-                  A
+                <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                  {(adminSession?.username || 'U')[0]}
                 </div>
-                <span className="hidden md:inline">Admin</span>
+                <span className="hidden md:inline capitalize">{adminSession?.username || 'Akun'}</span>
               </button>
 
-              {/* Dropdown Menu Admin */}
+              {/* Dropdown Menu Akun */}
               {showAdminDropdown && (
                 <>
                   {/* Backdrop klik luar untuk menutup dropdown */}
@@ -91,11 +91,11 @@ export default function Navbar({
                   
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-fadeIn">
                     <div className="px-3 py-2 border-b border-slate-100">
-                      <p className="text-xs font-bold text-slate-900">
-                        {adminSession?.name || 'Administrator'}
+                      <p className="text-xs font-bold text-slate-900 capitalize">
+                        {adminSession?.name || adminSession?.username || 'Pengguna'}
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        @{adminSession?.username || 'admin'}
+                        @{adminSession?.username || 'user'}
                       </p>
                     </div>
 

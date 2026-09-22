@@ -62,7 +62,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">
-              Ganti Kata Sandi Admin
+              Ganti Kata Sandi
             </h3>
             <p className="text-xs text-slate-500">
               Perbarui kata sandi untuk keamanan akses sistem

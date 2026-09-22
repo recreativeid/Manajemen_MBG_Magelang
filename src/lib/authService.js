@@ -43,30 +43,27 @@ export function getAdminSession() {
   }
 }
 
-// Login admin
+// Login
 export function loginAdmin(username, password) {
   initAuth();
   const currentPass = localStorage.getItem(AUTH_KEYS.PASSWORD) || DEFAULT_PASSWORD;
   const currentUsername = localStorage.getItem(AUTH_KEYS.USERNAME) || DEFAULT_USERNAME;
 
-  const trimmedUser = (username || '').trim().toLowerCase();
+  const trimmedUser = (username || '').trim();
   const trimmedPass = (password || '').trim();
 
-  // Izinkan username 'admin' atau kosong jika hanya mengisi password
-  const isUserValid = trimmedUser === currentUsername.toLowerCase() || trimmedUser === '' || trimmedUser === 'admin';
-
-  if (!isUserValid) {
-    return { success: false, error: 'Username admin tidak sesuai.' };
+  if (!trimmedUser) {
+    return { success: false, error: 'Silakan masukkan username terlebih dahulu.' };
   }
 
   if (trimmedPass !== currentPass) {
-    return { success: false, error: 'Kata sandi salah. Gunakan sandi bawaan admin123 atau yang telah Anda atur.' };
+    return { success: false, error: 'Kata sandi yang Anda masukkan salah.' };
   }
 
   const sessionData = {
     isLoggedIn: true,
-    username: currentUsername,
-    name: 'Administrator MBG',
+    username: trimmedUser || currentUsername,
+    name: trimmedUser ? (trimmedUser.charAt(0).toUpperCase() + trimmedUser.slice(1)) : 'Pengguna MBG',
     loginTime: new Date().toISOString()
   };
 

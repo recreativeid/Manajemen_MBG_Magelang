@@ -4,7 +4,7 @@ import { loginAdmin } from '../lib/authService';
 import logoBgn from '../assets/logo-bgn.png';
 
 export default function LoginPage({ onLoginSuccess }) {
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -62,7 +62,7 @@ export default function LoginPage({ onLoginSuccess }) {
             {/* Input Username */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Username Admin
+                Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -72,8 +72,9 @@ export default function LoginPage({ onLoginSuccess }) {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
+                  placeholder="Masukkan username..."
                   required
+                  autoFocus
                   className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
               </div>
@@ -85,9 +86,6 @@ export default function LoginPage({ onLoginSuccess }) {
                 <label className="block text-xs font-bold text-slate-700">
                   Kata Sandi
                 </label>
-                <span className="text-[11px] text-slate-400 font-medium">
-                  Bawaan: admin123
-                </span>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -99,7 +97,6 @@ export default function LoginPage({ onLoginSuccess }) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan kata sandi..."
                   required
-                  autoFocus
                   className="w-full pl-9 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 />
                 <button
@@ -122,7 +119,7 @@ export default function LoginPage({ onLoginSuccess }) {
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <span>Masuk sebagai Admin</span>
+                  <span>Masuk</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
