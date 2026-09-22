@@ -14,14 +14,14 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-20 sm:h-24 py-2">
+        <div className="flex items-center justify-between h-16 sm:h-18 py-1.5">
           
-          {/* Logo Resmi Badan Gizi Nasional - Ukuran Besar & Jelas Sesuai Permintaan */}
+          {/* Logo Resmi Badan Gizi Nasional - Ukuran Pas & Proporsional */}
           <div className="flex items-center">
             <img 
               src="/logo-bgn.png" 
               alt="Badan Gizi Nasional" 
-              className="h-14 sm:h-18 md:h-20 w-auto max-h-20 object-contain drop-shadow-sm transition-all" 
+              className="h-9 sm:h-10 md:h-11 w-auto max-h-11 object-contain transition-all" 
             />
           </div>
 
