@@ -49,14 +49,16 @@ c:\xampp\htdocs\Sistem_Rekapan_MBG_Magelang/
 └── src/
     ├── main.jsx                # Entry point React DOM
     ├── App.jsx                 # State controller utama, tab switcher, modal handler
-    ├── index.css               # Global CSS minimalis, scrollbar tipis
     ├── lib/
+    │   ├── authService.js      # Autentikasi admin, sesi login, verifikasi & ganti sandi
     │   ├── supabase.js         # Supabase client & deteksi konfigurasi aktif
-    │   ├── initialData.js      # Data awal cabang MBG Magelang, nama bulan, format rupiah
+    │   ├── initialData.js      # Data awal cabang MBG, sekuens bulan otomatis 2026->2027
     │   ├── storageService.js   # Dual-Engine Service: Continuous 14-day rolling cycle & matrix harian
     │   └── waHelper.js         # Generator WhatsApp dengan rincian tanggal belum setor
     ├── components/
-    │   ├── Navbar.jsx          # Header navigasi: Dashboard & Kelola Rekap Pembayaran
+    │   ├── LoginPage.jsx       # Layar login admin resmi dengan logo BGN & sandi default admin123
+    │   ├── ChangePasswordModal.jsx # Modal pengaturan ganti kata sandi admin
+    │   ├── Navbar.jsx          # Header navigasi: Logo resmi BGN, menu admin & ganti sandi
     │   ├── StatCard.jsx        # Komponen kartu metrik KPI minimalis
     │   ├── BranchModal.jsx     # Modal edit & tambah cabang MBG (Nama, Setoran Tetap, WA)
     │   ├── DailyPaymentModal.jsx # Modal cepat edit nominal & riwayat setoran harian per tanggal
