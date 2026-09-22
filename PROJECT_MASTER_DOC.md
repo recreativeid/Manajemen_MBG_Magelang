@@ -51,6 +51,7 @@ c:\xampp\htdocs\Sistem_Rekapan_MBG_Magelang/
     ├── App.jsx                 # State controller utama, tab switcher, modal handler
     ├── lib/
     │   ├── authService.js      # Autentikasi admin, sesi login, verifikasi & ganti sandi
+    │   ├── excelExport.js      # Generator ekspor file Excel (.xlsx) 1 bulan & per periode
     │   ├── supabase.js         # Supabase client & deteksi konfigurasi aktif
     │   ├── initialData.js      # Data awal cabang MBG, sekuens bulan otomatis 2026->2027
     │   ├── storageService.js   # Dual-Engine Service: Continuous 14-day rolling cycle & matrix harian
