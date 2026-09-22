@@ -32,12 +32,12 @@ export default function LoginPage({ onLoginSuccess }) {
         {/* Card Login */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-100 p-6 sm:p-8">
           
-          {/* Logo Resmi Badan Gizi Nasional */}
+          {/* Logo Resmi Badan Gizi Nasional - Ukuran Besar */}
           <div className="flex flex-col items-center text-center mb-6">
             <img 
               src="/logo-bgn.png" 
               alt="Badan Gizi Nasional" 
-              className="h-14 sm:h-16 w-auto object-contain mb-3"
+              className="h-20 sm:h-24 w-auto max-h-28 object-contain mb-4 drop-shadow-sm" 
             />
             <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
               Sistem Rekapan MBG Magelang
