@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Phone, Send, Check, Edit2, Plus, CheckCircle2, AlertCircle, 
-  HelpCircle, Sparkles, ChevronLeft, ChevronRight, Filter, Calendar
+  HelpCircle, Sparkles, ChevronLeft, ChevronRight, Filter, Calendar,
+  FileSpreadsheet, Download
 } from 'lucide-react';
 import HolidayManager from '../components/HolidayManager';
 import DailyPaymentModal from '../components/DailyPaymentModal';
 import { formatRupiah, MONTH_NAMES, SHORT_DAY_NAMES, generateMonthSequence } from '../lib/initialData';
 import { buildWaMessage, getWaUrl } from '../lib/waHelper';
+import { exportRecapToExcel } from '../lib/excelExport';
 
 // Generate sekuens bulan berkesinambungan otomatis (Oktober 2026 -> Desember 2026 -> Januari 2027 otomatis!)
 const MONTH_SEQUENCE = generateMonthSequence(2026, 10, 18);
@@ -144,6 +146,16 @@ export default function RecapPage({
     }
   };
 
+  // Handler Ekspor Excel (Mendukung 1 Bulan Penuh maupun Per Periode)
+  const handleExportExcel = (filterMode = activeCycleFilter) => {
+    exportRecapToExcel({
+      monthMatrixData,
+      selectedYear,
+      selectedMonth,
+      cycleFilter: filterMode
+    });
+  };
+
   return (
     <div className="space-y-5">
       
@@ -268,38 +280,71 @@ export default function RecapPage({
       {/* 3. Matrix Rekapan Pembayaran Harian 1 Bulan Penuh */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5">
         
-        {/* Baris Filter Siklus 14 Hari (Di Bawah Kalender, Menyambung ke Tabel, Tanpa Tagar) */}
-        <div className="flex flex-wrap items-center gap-1.5 pb-3.5 mb-3.5 border-b border-slate-100">
-          <span className="text-xs font-semibold text-slate-500 mr-1.5">
-            Rentang Hari:
-          </span>
-          <button
-            onClick={() => setActiveCycleFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-              activeCycleFilter === 'ALL'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            1 Bulan Penuh ({daysList.length} Hari)
-          </button>
+        {/* Baris Filter Siklus 14 Hari & Tombol Unduh Excel */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 mb-3.5 border-b border-slate-100">
+          
+          {/* Kelompok Pilihan Rentang Hari: 1 Bulan Penuh & Periode 1, 2, dst. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 mr-1">
+              Rentang Hari:
+            </span>
+            
+            {/* Tombol 1 Bulan Penuh */}
+            <button
+              type="button"
+              onClick={() => setActiveCycleFilter('ALL')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs transition flex flex-col items-center justify-center text-center ${
+                activeCycleFilter === 'ALL'
+                  ? 'bg-slate-900 text-white shadow-sm font-bold'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold'
+              }`}
+            >
+              <span>1 Bulan Penuh</span>
+              <span className={`text-[10px] leading-tight ${activeCycleFilter === 'ALL' ? 'text-slate-300' : 'text-slate-400'}`}>
+                {daysList.length} Hari
+              </span>
+            </button>
 
-          {cyclesList.map((c) => {
-            const isSelected = activeCycleFilter === String(c.cycleNumber);
-            return (
-              <button
-                key={c.cycleNumber}
-                onClick={() => setActiveCycleFilter(String(c.cycleNumber))}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {c.label}
-              </button>
-            );
-          })}
+            {/* Tombol Tiap Periode (Periode 1, Periode 2, dst. dengan tanggal di bawahnya) */}
+            {cyclesList.map((c) => {
+              const isSelected = activeCycleFilter === String(c.cycleNumber);
+              return (
+                <button
+                  key={c.cycleNumber}
+                  type="button"
+                  onClick={() => setActiveCycleFilter(String(c.cycleNumber))}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs transition flex flex-col items-center justify-center text-center ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-sm font-bold'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold'
+                  }`}
+                >
+                  <span>Periode {c.cycleNumber}</span>
+                  <span className={`text-[10px] leading-tight ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                    {c.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tombol Unduh Excel Cepat Berdasarkan Tampilan Aktif */}
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => handleExportExcel(activeCycleFilter)}
+              className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white transition shadow-sm"
+              title={`Unduh file Excel susunan sama persis dengan tabel untuk ${
+                activeCycleFilter === 'ALL' ? '1 Bulan Penuh' : `Periode ${activeCycleFilter}`
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>
+                Unduh Excel ({activeCycleFilter === 'ALL' ? '1 Bulan Penuh' : `Periode ${activeCycleFilter}`})
+              </span>
+            </button>
+          </div>
+
         </div>
 
         {/* Sub-header & Petunjuk 1-Klik */}
@@ -349,7 +394,10 @@ export default function RecapPage({
                       colSpan={daysInThisCycle.length}
                       className="py-1.5 px-2 text-center bg-blue-50/70 border-r border-blue-200 text-blue-900 font-extrabold uppercase tracking-wider"
                     >
-                      {c.label}
+                      <span className="block text-xs font-black">Periode {c.cycleNumber}</span>
+                      <span className="block text-[10px] font-normal text-slate-500 normal-case">
+                        {c.label}
+                      </span>
                     </th>
                   );
                 })}
