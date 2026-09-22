@@ -13,7 +13,6 @@ export function sanitizeWaNumber(phone) {
 
 export function buildWaMessage({
   branchName,
-  picName,
   monthName,
   year,
   dailyDeposit,
@@ -29,7 +28,7 @@ export function buildWaMessage({
 `*LAPORAN SETORAN MBG - LUNAS* ✅
 Kabupaten / Kota Magelang
 
-Halo Yth. *${picName || 'Pengelola'}* (${branchName}),
+Halo Yth. Pengelola Cabang *${branchName}*,
 
 Terima kasih atas kerja samanya. Pembayaran setoran Makan Bergizi Gratis (MBG) untuk:
 📅 *Bulan:* ${monthName} ${year}
@@ -51,7 +50,7 @@ Seluruh setoran hari kerja telah terisi penuh. Terima kasih banyak! 🙏`
 `*PEMBERITAHUAN SETORAN MBG* ⚠️
 Kabupaten / Kota Magelang
 
-Halo Yth. *${picName || 'Pengelola'}* (${branchName}),
+Halo Yth. Pengelola Cabang *${branchName}*,
 
 Berikut adalah Rekapan Pembayaran Setoran MBG:
 📅 *Bulan:* ${monthName} ${year}

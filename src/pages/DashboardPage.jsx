@@ -52,7 +52,6 @@ export default function DashboardPage({
   const handleQuickWa = (r) => {
     const msg = buildWaMessage({
       branchName: r.branch.name,
-      picName: r.branch.pic_name,
       periodName: period.title,
       monthName,
       year: selectedYear,

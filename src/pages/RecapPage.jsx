@@ -90,7 +90,6 @@ export default function RecapPage({
   const handleSendWa = (b) => {
     const message = buildWaMessage({
       branchName: b.branch.name,
-      picName: b.branch.pic_name,
       monthName: currentMonthName,
       year: selectedYear,
       dailyDeposit: b.branch.daily_deposit,
@@ -477,7 +476,7 @@ export default function RecapPage({
                             <span className="text-[11px] font-semibold text-blue-700">
                               {formatRupiah(b.branch.daily_deposit)}/hari
                             </span>
-                            <span className="text-[10px] text-slate-400">• {b.branch.pic_name || 'PIC'}</span>
+                            <span className="text-[10px] text-slate-400">• {b.branch.address || 'Magelang'}</span>
                           </div>
                         </div>
 

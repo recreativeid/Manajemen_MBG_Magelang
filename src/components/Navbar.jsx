@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, FileSpreadsheet, Plus, KeyRound, LogOut, UserCheck } from 'lucide-react';
+import { LayoutDashboard, FileSpreadsheet, Building2, Plus, KeyRound, LogOut, UserCheck } from 'lucide-react';
 import logoBgn from '../assets/logo-bgn.png';
 
 export default function Navbar({ 
@@ -26,7 +26,7 @@ export default function Navbar({
             />
           </div>
 
-          {/* Navigasi Bersih: Dashboard vs Kelola Rekap Pembayaran */}
+          {/* Navigasi Bersih: Dashboard vs Kelola Rekap Pembayaran vs Kelola Cabang */}
           <nav className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={() => setActiveTab('dashboard')}
@@ -50,6 +50,18 @@ export default function Navbar({
             >
               <FileSpreadsheet className="w-4 h-4 text-slate-700" />
               <span>Kelola Rekap Pembayaran</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('branches')}
+              className={`flex items-center space-x-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition ${
+                activeTab === 'branches'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Building2 className="w-4 h-4 text-slate-700" />
+              <span>Kelola Cabang</span>
             </button>
           </nav>
 

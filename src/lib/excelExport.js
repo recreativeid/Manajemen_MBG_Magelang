@@ -41,7 +41,7 @@ export function exportRecapToExcel({
   const headerRow1 = [
     'No',
     'Nama Cabang MBG',
-    'Penanggung Jawab (PIC)',
+    'Alamat Cabang',
     'No. WhatsApp',
     'Tarif Setoran/Hari'
   ];
@@ -79,7 +79,7 @@ export function exportRecapToExcel({
     const rowData = [
       index + 1,
       b.branch.name,
-      b.branch.pic_name || '-',
+      b.branch.address || '-',
       b.branch.phone_wa || '-',
       b.branch.daily_deposit
     ];

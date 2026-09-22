@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import DashboardPage from './pages/DashboardPage';
 import RecapPage from './pages/RecapPage';
+import BranchManagementPage from './pages/BranchManagementPage';
 import BranchModal from './components/BranchModal';
+import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import PaymentModal from './components/PaymentModal';
 import LoginPage from './components/LoginPage';
 import ChangePasswordModal from './components/ChangePasswordModal';
@@ -43,6 +45,11 @@ export default function App() {
   // Modals Cabang & Pembayaran
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState(null);
+
+  // Modal Konfirmasi Persetujuan Hapus Cabang
+  const [branchToDelete, setBranchToDelete] = useState(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [isDeletingBranch, setIsDeletingBranch] = useState(false);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedBranchRecapForPayment, setSelectedBranchRecapForPayment] = useState(null);
@@ -134,12 +141,31 @@ export default function App() {
     setEditingBranch(null);
   };
 
-  // Handle Delete Branch
-  const handleDeleteBranch = async (branchId) => {
-    await deleteBranch(branchId);
-    await fetchData();
-    setIsBranchModalOpen(false);
-    setEditingBranch(null);
+  // Handle Request Delete Branch (Buka Pop Up Persetujuan)
+  const handleRequestDeleteBranch = (branch) => {
+    setBranchToDelete(branch);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  // Handle Eksekusi Hapus Cabang setelah Persetujuan
+  const handleConfirmDeleteBranch = async () => {
+    if (!branchToDelete) return;
+    setIsDeletingBranch(true);
+    try {
+      await deleteBranch(branchToDelete.id);
+      await fetchData();
+      setIsConfirmDeleteOpen(false);
+      setBranchToDelete(null);
+      if (isBranchModalOpen && editingBranch?.id === branchToDelete.id) {
+        setIsBranchModalOpen(false);
+        setEditingBranch(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete branch:', err);
+      alert('Gagal menghapus cabang.');
+    } finally {
+      setIsDeletingBranch(false);
+    }
   };
 
   const handleOpenEditBranch = (branch) => {
@@ -188,6 +214,18 @@ export default function App() {
             onNavigateToRecap={() => setActiveTab('recap')}
             onOpenPaymentModal={handleOpenPaymentModal}
           />
+        ) : activeTab === 'branches' ? (
+          <BranchManagementPage
+            monthMatrixData={monthMatrixData}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            onSelectYear={setSelectedYear}
+            onSelectMonth={setSelectedMonth}
+            onSelectMonthAndYear={handleSelectMonthAndYear}
+            onOpenAddBranch={handleOpenAddBranch}
+            onOpenEditBranch={handleOpenEditBranch}
+            onRequestDeleteBranch={handleRequestDeleteBranch}
+          />
         ) : (
           <RecapPage
             monthMatrixData={monthMatrixData}
@@ -213,7 +251,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Modals Cabang */}
+      {/* Modals Cabang (Tambah / Edit) */}
       <BranchModal
         isOpen={isBranchModalOpen}
         onClose={() => {
@@ -221,8 +259,20 @@ export default function App() {
           setEditingBranch(null);
         }}
         onSave={handleSaveBranch}
-        onDelete={handleDeleteBranch}
+        onRequestDelete={handleRequestDeleteBranch}
         branch={editingBranch}
+      />
+
+      {/* Modal Konfirmasi Persetujuan Hapus Cabang */}
+      <ConfirmDeleteModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => {
+          setIsConfirmDeleteOpen(false);
+          setBranchToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteBranch}
+        branchName={branchToDelete?.name}
+        isLoading={isDeletingBranch}
       />
 
       {/* Modal Pembayaran Periode */}
