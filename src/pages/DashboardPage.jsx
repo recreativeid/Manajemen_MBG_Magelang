@@ -7,23 +7,10 @@ import {
   DollarSign, CheckCircle, AlertCircle, TrendingUp, Send, ArrowRight
 } from 'lucide-react';
 import StatCard from '../components/StatCard';
-import { formatRupiah, MONTH_NAMES } from '../lib/initialData';
+import { formatRupiah, MONTH_NAMES, generateMonthSequence } from '../lib/initialData';
 import { buildWaMessage, getWaUrl } from '../lib/waHelper';
 
-const ORDERED_MONTHS = [
-  { index: 10, name: 'Oktober' },
-  { index: 11, name: 'November' },
-  { index: 12, name: 'Desember' },
-  { index: 1, name: 'Januari' },
-  { index: 2, name: 'Februari' },
-  { index: 3, name: 'Maret' },
-  { index: 4, name: 'April' },
-  { index: 5, name: 'Mei' },
-  { index: 6, name: 'Juni' },
-  { index: 7, name: 'Juli' },
-  { index: 8, name: 'Agustus' },
-  { index: 9, name: 'September' },
-];
+const MONTH_SEQUENCE = generateMonthSequence(2026, 10, 18);
 
 export default function DashboardPage({
   recapData,
@@ -31,6 +18,7 @@ export default function DashboardPage({
   selectedMonth,
   selectedPeriodIndex,
   onSelectMonth,
+  onSelectMonthAndYear,
   onSelectPeriod,
   onNavigateToRecap,
   onOpenPaymentModal
@@ -97,15 +85,24 @@ export default function DashboardPage({
           </p>
         </div>
 
-        {/* Filter Bulan & Periode Ringkas */}
+        {/* Filter Bulan & Periode Ringkas (Tahun Otomatis) */}
         <div className="flex flex-wrap items-center gap-2">
           <select
-            value={selectedMonth}
-            onChange={(e) => onSelectMonth(Number(e.target.value))}
+            value={`${selectedYear}-${selectedMonth}`}
+            onChange={(e) => {
+              const [y, m] = e.target.value.split('-').map(Number);
+              if (onSelectMonthAndYear) {
+                onSelectMonthAndYear(m, y);
+              } else {
+                onSelectMonth(m);
+              }
+            }}
             className="bg-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {ORDERED_MONTHS.map((m) => (
-              <option key={m.index} value={m.index}>{m.name} {selectedYear}</option>
+            {MONTH_SEQUENCE.map((item) => (
+              <option key={`${item.year}-${item.month}`} value={`${item.year}-${item.month}`}>
+                {item.monthName} {item.year}
+              </option>
             ))}
           </select>
 

@@ -357,11 +357,15 @@ export async function getFullMonthMatrixData(year, month) {
     }
     cyclesMap[cycleInfo.cycleNumber].days.push(day);
 
+    const now = new Date();
+    const isToday = now.getFullYear() === year && (now.getMonth() + 1) === month && now.getDate() === day;
+
     daysList.push({
       dayNumber: day,
       dateStr,
       dayOfWeek,
       isHoliday,
+      isToday,
       cycleInfo
     });
   }

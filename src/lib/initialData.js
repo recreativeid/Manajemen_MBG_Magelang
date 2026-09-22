@@ -106,3 +106,29 @@ export function generatePeriodsForMonth(year, month) {
 
   return periods;
 }
+
+// Generator sekuens bulan berurutan otomatis (September 2026 -> Oktober 2026 -> Januari 2027 otomatis)
+export function generateMonthSequence(startYear = 2026, startMonth = 9, count = 18) {
+  const sequence = [];
+  let y = startYear;
+  let m = startMonth;
+
+  for (let i = 0; i < count; i++) {
+    sequence.push({
+      year: y,
+      month: m,
+      monthName: MONTH_NAMES[m - 1],
+      label: `${MONTH_NAMES[m - 1]} ${y}`,
+      shortLabel: `${MONTH_NAMES[m - 1]} ${y}`
+    });
+
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+
+  return sequence;
+}
+

@@ -4,6 +4,8 @@ import DashboardPage from './pages/DashboardPage';
 import RecapPage from './pages/RecapPage';
 import BranchModal from './components/BranchModal';
 import PaymentModal from './components/PaymentModal';
+import LoginPage from './components/LoginPage';
+import ChangePasswordModal from './components/ChangePasswordModal';
 import { 
   getFullMonthMatrixData,
   getCompleteRecapData, 
@@ -16,19 +18,28 @@ import {
   saveBranch, 
   deleteBranch 
 } from './lib/storageService';
+import { checkIsLoggedIn, getAdminSession, logoutAdmin } from './lib/authService';
 import { MONTH_NAMES } from './lib/initialData';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('recap'); // Langsung buka Kelola Rekap Pembayaran agar user langsung melihat matrix harian
-  const [selectedYear, setSelectedYear] = useState(2026);
-  const [selectedMonth, setSelectedMonth] = useState(10); // Mulai bulan Oktober sesuai permintaan user
+  // Autentikasi Admin MBG
+  const [isAuthenticated, setIsAuthenticated] = useState(() => checkIsLoggedIn());
+  const [adminSession, setAdminSession] = useState(() => getAdminSession());
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('recap'); // Kelola Rekap Pembayaran langsung terbuka
+
+  // Default otomatis mengikuti hari & tanggal real-time saat ini
+  const realDate = new Date();
+  const [selectedYear, setSelectedYear] = useState(realDate.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(realDate.getMonth() + 1);
   const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(1);
   
   const [monthMatrixData, setMonthMatrixData] = useState(null);
   const [recapData, setRecapData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modals
+  // Modals Cabang & Pembayaran
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState(null);
 
@@ -52,8 +63,30 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [selectedYear, selectedMonth, selectedPeriodIndex]);
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [selectedYear, selectedMonth, selectedPeriodIndex, isAuthenticated]);
+
+  // Handle Login & Logout
+  const handleLoginSuccess = (session) => {
+    setIsAuthenticated(true);
+    setAdminSession(session);
+  };
+
+  const handleLogout = () => {
+    logoutAdmin();
+    setIsAuthenticated(false);
+    setAdminSession(null);
+  };
+
+  // Handle Pemilihan Bulan & Tahun Bersamaan (misal: Januari langsung 2027)
+  const handleSelectMonthAndYear = (month, year) => {
+    setSelectedMonth(month);
+    if (year) {
+      setSelectedYear(year);
+    }
+  };
 
   // Handle Update Holiday Config
   const handleUpdatePeriodConfig = async (newConfig) => {
@@ -123,13 +156,21 @@ export default function App() {
     setIsPaymentModalOpen(true);
   };
 
+  // Jika belum login, tampilkan layar login admin
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col selection:bg-blue-100 selection:text-blue-900">
-      {/* Top Navbar Minimalis SaaS */}
+      {/* Top Navbar Minimalis SaaS dengan Logo Resmi BGN & Kontrol Admin */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenAddBranch={handleOpenAddBranch}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onLogout={handleLogout}
+        adminSession={adminSession}
       />
 
       {/* Main Content Area */}
@@ -141,6 +182,7 @@ export default function App() {
             selectedMonth={selectedMonth}
             selectedPeriodIndex={selectedPeriodIndex}
             onSelectMonth={setSelectedMonth}
+            onSelectMonthAndYear={handleSelectMonthAndYear}
             onSelectPeriod={setSelectedPeriodIndex}
             onNavigateToRecap={() => setActiveTab('recap')}
             onOpenPaymentModal={handleOpenPaymentModal}
@@ -152,6 +194,7 @@ export default function App() {
             selectedMonth={selectedMonth}
             onSelectYear={setSelectedYear}
             onSelectMonth={setSelectedMonth}
+            onSelectMonthAndYear={handleSelectMonthAndYear}
             onUpdatePeriodConfig={handleUpdatePeriodConfig}
             onToggleDailyPayment={handleToggleDailyPayment}
             onSaveDailyPayment={handleSaveDailyPayment}
@@ -165,11 +208,11 @@ export default function App() {
       {/* Footer Minimalis */}
       <footer className="border-t border-slate-100 py-3 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4">
-          <p>© {selectedYear} MBG Magelang • Rekapan Harian 1 Bulan & Siklus 14 Hari Berkelanjutan</p>
+          <p>© {selectedYear} Badan Gizi Nasional • MBG Magelang • Rekapan Harian 1 Bulan & Siklus 14 Hari Berkelanjutan</p>
         </div>
       </footer>
 
-      {/* Modals */}
+      {/* Modals Cabang */}
       <BranchModal
         isOpen={isBranchModalOpen}
         onClose={() => {
@@ -181,6 +224,7 @@ export default function App() {
         branch={editingBranch}
       />
 
+      {/* Modal Pembayaran Periode */}
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => {
@@ -193,6 +237,12 @@ export default function App() {
         year={selectedYear}
         onAddPayment={handleAddPayment}
         onDeletePayment={handleDeletePayment}
+      />
+
+      {/* Modal Pengaturan Ganti Kata Sandi Admin */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
       />
     </div>
   );

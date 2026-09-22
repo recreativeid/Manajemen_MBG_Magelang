@@ -1,27 +1,15 @@
 import React, { useState } from 'react';
 import { 
   Phone, Send, Check, Edit2, Plus, CheckCircle2, AlertCircle, 
-  HelpCircle, Sparkles, ChevronRight, Filter
+  HelpCircle, Sparkles, ChevronLeft, ChevronRight, Filter, Calendar
 } from 'lucide-react';
 import HolidayManager from '../components/HolidayManager';
 import DailyPaymentModal from '../components/DailyPaymentModal';
-import { formatRupiah, MONTH_NAMES, SHORT_DAY_NAMES } from '../lib/initialData';
+import { formatRupiah, MONTH_NAMES, SHORT_DAY_NAMES, generateMonthSequence } from '../lib/initialData';
 import { buildWaMessage, getWaUrl } from '../lib/waHelper';
 
-const ORDERED_MONTHS = [
-  { index: 10, name: 'Oktober' },
-  { index: 11, name: 'November' },
-  { index: 12, name: 'Desember' },
-  { index: 1, name: 'Januari' },
-  { index: 2, name: 'Februari' },
-  { index: 3, name: 'Maret' },
-  { index: 4, name: 'April' },
-  { index: 5, name: 'Mei' },
-  { index: 6, name: 'Juni' },
-  { index: 7, name: 'Juli' },
-  { index: 8, name: 'Agustus' },
-  { index: 9, name: 'September' },
-];
+// Generate sekuens bulan berkesinambungan otomatis (Oktober 2026 -> Desember 2026 -> Januari 2027 otomatis!)
+const MONTH_SEQUENCE = generateMonthSequence(2026, 10, 18);
 
 export default function RecapPage({
   monthMatrixData,
@@ -29,6 +17,7 @@ export default function RecapPage({
   selectedMonth,
   onSelectYear,
   onSelectMonth,
+  onSelectMonthAndYear,
   onUpdatePeriodConfig,
   onToggleDailyPayment,
   onSaveDailyPayment,
@@ -49,6 +38,41 @@ export default function RecapPage({
 
   const { daysList, cyclesList, branchMatrix, stats, kpi, holidayConfig } = monthMatrixData;
   const currentMonthName = MONTH_NAMES[selectedMonth - 1];
+
+  // Helper navigasi bulan & tahun
+  const setMonthAndYear = (m, y) => {
+    if (onSelectMonthAndYear) {
+      onSelectMonthAndYear(m, y);
+    } else {
+      onSelectMonth(m);
+      onSelectYear(y);
+    }
+  };
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      setMonthAndYear(12, selectedYear - 1);
+    } else {
+      setMonthAndYear(selectedMonth - 1, selectedYear);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      setMonthAndYear(1, selectedYear + 1);
+    } else {
+      setMonthAndYear(selectedMonth + 1, selectedYear);
+    }
+  };
+
+  // Deteksi live hari ini
+  const realNow = new Date();
+  const isViewingToday = selectedYear === realNow.getFullYear() && selectedMonth === (realNow.getMonth() + 1);
+
+  const handleJumpToToday = () => {
+    const now = new Date();
+    setMonthAndYear(now.getMonth() + 1, now.getFullYear());
+  };
 
   // Filter kolom hari jika user memfilter siklus 14 hari tertentu
   const filteredDays = activeCycleFilter === 'ALL'
@@ -123,7 +147,7 @@ export default function RecapPage({
   return (
     <div className="space-y-5">
       
-      {/* 1. Header & Tab Pilihan Bulan (Mulai Oktober) */}
+      {/* 1. Header & Tab Pilihan Bulan (Tahun Otomatis & Live Hari Ini) */}
       <div className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div>
@@ -131,7 +155,7 @@ export default function RecapPage({
               <h2 className="text-base font-bold text-slate-900">
                 Rekap Pembayaran Harian 1 Bulan Penuh
               </h2>
-              <span className="text-xs px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100">
                 {currentMonthName} {selectedYear}
               </span>
             </div>
@@ -140,42 +164,88 @@ export default function RecapPage({
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          {/* Kontrol Cepat: Navigasi Bulan, Tahun & Hari Ini */}
+          <div className="flex flex-wrap items-center gap-2">
+            
+            {/* Tombol Lompat ke Hari Ini (Live) */}
+            <button
+              type="button"
+              onClick={handleJumpToToday}
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition border ${
+                isViewingToday
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+              title="Kembali ke Bulan & Hari Ini (Real-Time Live)"
+            >
+              <span className={`w-2 h-2 rounded-full ${isViewingToday ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+              <span>{isViewingToday ? 'Live Hari Ini' : 'Hari Ini'}</span>
+            </button>
+
+            {/* Tombol Mundur/Maju 1 Bulan (Mulus melewati pergantian tahun) */}
+            <div className="inline-flex items-center rounded-lg border border-slate-200 bg-white p-0.5">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="p-1 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+                title="Bulan Sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="p-1 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+                title="Bulan Berikutnya"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Dropdown Tahun */}
             <select
               value={selectedYear}
-              onChange={(e) => onSelectYear(Number(e.target.value))}
-              className="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setMonthAndYear(selectedMonth, Number(e.target.value))}
+              className="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={2025}>2025</option>
               <option value={2026}>2026</option>
               <option value={2027}>2027</option>
+              <option value={2028}>2028</option>
             </select>
 
+            {/* Tombol Tambah Cabang */}
             <button
               onClick={onOpenAddBranch}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Tambah Cabang</span>
+              <span className="hidden sm:inline">Tambah Cabang</span>
             </button>
           </div>
         </div>
 
-        {/* Tab Nama Bulan (Scrollable di Mobile) */}
-        <div className="mt-3 flex items-center space-x-1 overflow-x-auto no-scrollbar pb-1">
-          {ORDERED_MONTHS.map((m) => {
-            const isActive = selectedMonth === m.index;
+        {/* Tab Nama Bulan Berkesinambungan (Tahun otomatis menyesuaikan, misal Januari -> 2027) */}
+        <div className="mt-3 flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-1">
+          {MONTH_SEQUENCE.map((m) => {
+            const isActive = selectedYear === m.year && selectedMonth === m.month;
             return (
               <button
-                key={m.index}
-                onClick={() => onSelectMonth(m.index)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+                key={`${m.year}-${m.month}`}
+                onClick={() => setMonthAndYear(m.month, m.year)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center space-x-1.5 ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
+                title={`Pilih ${m.monthName} ${m.year}`}
               >
-                {m.name}
+                <span>{m.monthName}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                  isActive ? 'bg-blue-700/80 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {m.year}
+                </span>
               </button>
             );
           })}
@@ -289,20 +359,30 @@ export default function RecapPage({
                 </th>
               </tr>
 
-              {/* Baris 2: Nomor Tanggal & Hari (1..31) */}
+              {/* Baris 2: Nomor Tanggal & Hari (1..31) dengan Deteksi Hari Ini */}
               <tr className="border-b border-slate-200 text-[10px]">
                 {filteredDays.map((d) => {
                   const isSun = d.dayOfWeek === 0;
+                  const isToday = d.isToday;
                   return (
                     <th
                       key={d.dayNumber}
-                      className={`py-2 px-1 text-center min-w-[34px] border-r border-slate-200 ${
-                        d.isHoliday ? 'bg-red-50 text-red-700 font-bold' : 'text-slate-600'
+                      className={`py-2 px-1 text-center min-w-[36px] border-r border-slate-200 transition-colors ${
+                        isToday
+                          ? 'bg-blue-600 text-white font-bold ring-2 ring-blue-500 ring-inset'
+                          : d.isHoliday
+                          ? 'bg-red-50 text-red-700 font-bold'
+                          : 'text-slate-600'
                       }`}
-                      title={`${d.dateStr} (${d.isHoliday ? 'Libur' : 'Hari Kerja'})`}
+                      title={`${d.dateStr} (${d.isHoliday ? 'Libur' : 'Hari Kerja'})${isToday ? ' - HARI INI' : ''}`}
                     >
+                      {isToday && (
+                        <span className="block text-[8px] uppercase tracking-wider text-blue-100 font-extrabold -mb-0.5">
+                          Hari Ini
+                        </span>
+                      )}
                       <span className="block font-bold text-xs">{d.dayNumber}</span>
-                      <span className={`block uppercase font-medium ${isSun ? 'text-red-500' : 'text-slate-400'}`}>
+                      <span className={`block uppercase font-medium ${isToday ? 'text-blue-100' : isSun ? 'text-red-500' : 'text-slate-400'}`}>
                         {SHORT_DAY_NAMES[d.dayOfWeek]}
                       </span>
                     </th>
@@ -348,17 +428,22 @@ export default function RecapPage({
                       </div>
                     </td>
 
-                    {/* Kolom Tanggal (1..31) */}
+                    {/* Kolom Tanggal (1..31) dengan Highlight Hari Ini */}
                     {filteredDays.map((d) => {
                       const entry = b.dailyEntries.find(e => e.dayNumber === d.dayNumber);
                       const isHoliday = d.isHoliday;
                       const isPaid = entry?.isPaid;
+                      const isToday = d.isToday;
 
                       return (
                         <td
                           key={d.dayNumber}
-                          className={`p-1 text-center border-r border-slate-200 text-center transition ${
-                            isHoliday ? 'bg-red-50/50' : ''
+                          className={`p-1 text-center border-r border-slate-200 transition ${
+                            isToday
+                              ? 'bg-blue-50/40'
+                              : isHoliday
+                              ? 'bg-red-50/50'
+                              : ''
                           }`}
                         >
                           <button
@@ -370,8 +455,10 @@ export default function RecapPage({
                                 : isPaid 
                                 ? `Sudah Setor: ${formatRupiah(entry.amount)}` 
                                 : `Belum Setor (Kewajiban: ${formatRupiah(b.branch.daily_deposit)})`
-                            }`}
-                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] font-bold flex items-center justify-center mx-auto transition-all ${
+                            }${isToday ? ' [HARI INI]' : ''}`}
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] font-bold flex items-center justify-center mx-auto transition-all relative ${
+                              isToday ? 'ring-2 ring-blue-500 ring-offset-1 z-10' : ''
+                            } ${
                               isHoliday
                                 ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-200'
                                 : isPaid
@@ -399,104 +486,67 @@ export default function RecapPage({
                             <span className="font-bold text-slate-900 text-xs">
                               {formatRupiah(b.totalPaid)}
                             </span>
-                            <span className="text-[10px] text-slate-400">
-                              / {formatRupiah(b.totalBilling)}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center space-x-1.5 mt-0.5">
-                            <span className="text-[10px] font-semibold text-slate-500">
-                              Terisi: {b.paidWorkingDaysCount}/{b.workingDaysCount} Hari
-                            </span>
                             {isLunas ? (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
                                 Lunas
                               </span>
                             ) : (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-100 text-red-700">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">
                                 Kurang {formatRupiah(b.remainingAmount)}
                               </span>
                             )}
                           </div>
+
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            Setor: {b.paidWorkingDaysCount}/{b.workingDaysCount} hari aktif
+                          </div>
                         </div>
 
-                        {/* Tombol WhatsApp Resmi */}
+                        {/* Tombol Kirim Tagihan WA */}
                         <button
                           onClick={() => handleSendWa(b)}
-                          className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center space-x-1 shadow-sm ${
+                          className={`inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
                             isLunas
-                              ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                              : 'bg-blue-600 hover:bg-blue-700 text-white'
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
                           }`}
-                          title={isLunas ? 'Kirim WA Laporan Lunas' : 'Tagih via WA dengan rincian tanggal belum setor'}
+                          title={isLunas ? 'Kirim Laporan Pelunasan ke WA' : 'Kirim Penagihan & Rincian Belum Setor ke WA'}
                         >
                           <Send className="w-3 h-3" />
-                          <span>{isLunas ? 'WA' : 'Tagih'}</span>
+                          <span>WA</span>
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 );
               })}
             </tbody>
-
-            {/* Total Footer Row */}
-            <tfoot className="sticky bottom-0 z-20 bg-slate-50 font-bold text-slate-900 border-t-2 border-slate-200 text-xs">
-              <tr>
-                <td className="py-2.5 px-3 sticky left-0 z-30 bg-slate-100 border-r border-slate-200">
-                  TOTAL BULAN INI:
-                </td>
-                
-                {filteredDays.map(d => {
-                  const totalPaidOnDate = branchMatrix.reduce((sum, b) => {
-                    const e = b.dailyEntries.find(entry => entry.dayNumber === d.dayNumber);
-                    return sum + (e?.amount || 0);
-                  }, 0);
-
-                  return (
-                    <td key={d.dayNumber} className="py-2 px-1 text-center border-r border-slate-200 text-[10px]">
-                      {d.isHoliday ? (
-                        <span className="text-red-500 font-bold">-</span>
-                      ) : totalPaidOnDate > 0 ? (
-                        <span className="text-blue-700 font-bold">{(totalPaidOnDate / 1000000).toFixed(0)}jt</span>
-                      ) : (
-                        <span className="text-slate-400">0</span>
-                      )}
-                    </td>
-                  );
-                })}
-
-                <td className="py-2.5 px-3 sticky right-0 z-30 bg-slate-100 border-l border-slate-200">
-                  <div className="flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-blue-700 font-extrabold">{formatRupiah(kpi.totalPaid)}</span>
-                      <span className="text-slate-400 text-[10px] block">
-                        Kurang: <span className="text-red-600">{formatRupiah(kpi.totalRemaining)}</span>
-                      </span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[11px] font-extrabold">
-                      {kpi.paymentPercentage}% Terbayar
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            </tfoot>
           </table>
         </div>
 
-        {/* Keterangan Bawah */}
-        <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-2 border-t border-slate-100 pt-2.5">
-          <p>
-            ℹ️ <span className="font-semibold">Info Siklus:</span> Pengelompokan 14 hari bersambung secara otomatis melintasi akhir bulan. Hari libur tidak dikenakan kewajiban setoran.
-          </p>
-          <p>
-            Pesan WhatsApp otomatis menyertakan tanggal-tanggal yang belum disetor oleh cabang.
-          </p>
+        {/* Ringkasan Akumulasi Footer Table */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="text-slate-500">
+            Total {branchMatrix.length} Cabang • {stats.workingDays} Hari Kerja Aktif ({stats.holidays} Hari Libur)
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 font-bold">
+            <span className="text-slate-700">
+              Total Kewajiban: <span className="text-slate-900">{formatRupiah(stats.totalBilling)}</span>
+            </span>
+            <span className="text-blue-700">
+              Total Terkumpul: {formatRupiah(stats.totalPaid)}
+            </span>
+            <span className={stats.totalRemaining > 0 ? 'text-red-600' : 'text-emerald-600'}>
+              Sisa Tagihan: {formatRupiah(stats.totalRemaining)}
+            </span>
+          </div>
         </div>
 
       </div>
 
-      {/* Modal Input/Edit Setoran Harian */}
+      {/* Modal Edit Detail / Hapus Pembayaran Harian */}
       <DailyPaymentModal
         isOpen={Boolean(selectedCellForModal)}
         onClose={() => setSelectedCellForModal(null)}

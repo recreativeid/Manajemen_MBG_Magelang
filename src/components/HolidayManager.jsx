@@ -93,6 +93,11 @@ export default function HolidayManager({
     }
   };
 
+  // Deteksi tanggal hari ini (Live Today)
+  const realNow = new Date();
+  const isLiveMonth = realNow.getFullYear() === year && (realNow.getMonth() + 1) === month;
+  const liveTodayDate = realNow.getDate();
+
   // Buat sel kalender kosong untuk offset hari pertama
   const calendarCells = [];
   for (let i = 0; i < firstDayIndex; i++) {
@@ -101,11 +106,13 @@ export default function HolidayManager({
   for (let day = 1; day <= daysInMonth; day++) {
     const isHoliday = checkIsHoliday(day);
     const inActivePeriod = day >= period.start_day && day <= period.end_day;
+    const isToday = isLiveMonth && day === liveTodayDate;
     calendarCells.push({
       type: 'day',
       dayNumber: day,
       isHoliday,
       inActivePeriod,
+      isToday,
       key: `day-${day}`
     });
   }
@@ -172,15 +179,17 @@ export default function HolidayManager({
               return <div key={cell.key} className="h-9 sm:h-10" />;
             }
 
-            const { dayNumber, isHoliday, inActivePeriod } = cell;
+            const { dayNumber, isHoliday, inActivePeriod, isToday } = cell;
 
             return (
               <button
                 key={cell.key}
                 type="button"
                 onClick={() => toggleDate(dayNumber)}
-                title={`Tanggal ${dayNumber}: ${isHoliday ? 'Libur' : 'Hari Kerja'}${inActivePeriod ? ' (Periode Aktif)' : ''}`}
+                title={`Tanggal ${dayNumber}: ${isHoliday ? 'Libur' : 'Hari Kerja'}${isToday ? ' (HARI INI)' : ''}`}
                 className={`h-9 sm:h-10 rounded-lg text-xs font-semibold transition-all relative flex flex-col items-center justify-center ${
+                  isToday ? 'ring-2 ring-blue-600 ring-offset-1 font-bold z-10' : ''
+                } ${
                   isHoliday
                     ? 'bg-red-500 text-white font-bold shadow-sm'
                     : inActivePeriod
@@ -189,10 +198,15 @@ export default function HolidayManager({
                 }`}
               >
                 <span>{dayNumber}</span>
-                {inActivePeriod && !isHoliday && (
+                {isToday && (
+                  <span className="text-[7px] uppercase font-black tracking-tighter text-blue-600 -mt-0.5">
+                    Hari Ini
+                  </span>
+                )}
+                {inActivePeriod && !isHoliday && !isToday && (
                   <span className="w-1 h-1 rounded-full bg-blue-600 mt-0.5" />
                 )}
-                {isHoliday && (
+                {isHoliday && !isToday && (
                   <span className="text-[8px] leading-none opacity-90">Libur</span>
                 )}
               </button>
