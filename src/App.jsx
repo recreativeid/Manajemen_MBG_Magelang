@@ -29,10 +29,11 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('recap'); // Kelola Rekap Pembayaran langsung terbuka
 
-  // Default otomatis mengikuti hari & tanggal real-time saat ini
+  // Default otomatis mengikuti hari & tanggal real-time saat ini (dimulai minimal Oktober 2026 sebagai Periode 1)
   const realDate = new Date();
-  const [selectedYear, setSelectedYear] = useState(realDate.getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(realDate.getMonth() + 1);
+  const isBeforeStart = realDate.getFullYear() < 2026 || (realDate.getFullYear() === 2026 && (realDate.getMonth() + 1) < 10);
+  const [selectedYear, setSelectedYear] = useState(isBeforeStart ? 2026 : realDate.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(isBeforeStart ? 10 : (realDate.getMonth() + 1));
   const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(1);
   
   const [monthMatrixData, setMonthMatrixData] = useState(null);

@@ -51,7 +51,11 @@ export default function RecapPage({
     }
   };
 
+  // Batas awal timeline: Oktober 2026 adalah Periode 1
+  const isEarliestMonth = selectedYear === 2026 && selectedMonth <= 10;
+
   const handlePrevMonth = () => {
+    if (isEarliestMonth) return;
     if (selectedMonth === 1) {
       setMonthAndYear(12, selectedYear - 1);
     } else {
@@ -67,13 +71,14 @@ export default function RecapPage({
     }
   };
 
-  // Deteksi live hari ini
+  // Deteksi live hari ini (jika hari ini sebelum Oktober 2026, default ke Oktober 2026)
   const realNow = new Date();
-  const isViewingToday = selectedYear === realNow.getFullYear() && selectedMonth === (realNow.getMonth() + 1);
+  const todayEffectiveYear = realNow.getFullYear() < 2026 || (realNow.getFullYear() === 2026 && (realNow.getMonth() + 1) < 10) ? 2026 : realNow.getFullYear();
+  const todayEffectiveMonth = realNow.getFullYear() < 2026 || (realNow.getFullYear() === 2026 && (realNow.getMonth() + 1) < 10) ? 10 : (realNow.getMonth() + 1);
+  const isViewingToday = selectedYear === todayEffectiveYear && selectedMonth === todayEffectiveMonth;
 
   const handleJumpToToday = () => {
-    const now = new Date();
-    setMonthAndYear(now.getMonth() + 1, now.getFullYear());
+    setMonthAndYear(todayEffectiveMonth, todayEffectiveYear);
   };
 
   // Filter kolom hari jika user memfilter siklus 14 hari tertentu
@@ -199,8 +204,13 @@ export default function RecapPage({
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
-                title="Bulan Sebelumnya"
+                disabled={isEarliestMonth}
+                className={`p-1 rounded-md transition ${
+                  isEarliestMonth 
+                    ? 'text-slate-300 cursor-not-allowed' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title={isEarliestMonth ? 'Batas awal timeline: Oktober 2026 (Periode 1)' : 'Bulan Sebelumnya'}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -217,13 +227,18 @@ export default function RecapPage({
             {/* Dropdown Tahun */}
             <select
               value={selectedYear}
-              onChange={(e) => setMonthAndYear(selectedMonth, Number(e.target.value))}
+              onChange={(e) => {
+                const newYear = Number(e.target.value);
+                const newMonth = (newYear === 2026 && selectedMonth < 10) ? 10 : selectedMonth;
+                setMonthAndYear(newMonth, newYear);
+              }}
               className="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value={2025}>2025</option>
               <option value={2026}>2026</option>
               <option value={2027}>2027</option>
               <option value={2028}>2028</option>
+              <option value={2029}>2029</option>
+              <option value={2030}>2030</option>
             </select>
 
             {/* Tombol Tambah Cabang */}

@@ -18,9 +18,14 @@ const ANCHOR_DATE = new Date(2026, 9, 1); // 1 Okt 2026 (month is 0-indexed: 9 =
 export function getContinuousCycleInfo(dateObj) {
   const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
   const diffTime = d.getTime() - ANCHOR_DATE.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   
-  const cycleIndex = Math.floor(diffDays / 14);
+  // Selalu mulai dari Periode 1 (Oktober 2026), tidak boleh ada Periode 0 atau negatif
+  if (diffDays < 0) {
+    diffDays = 0;
+  }
+  
+  const cycleIndex = Math.max(0, Math.floor(diffDays / 14));
   const dayInCycle = ((diffDays % 14) + 14) % 14 + 1; // 1 s/d 14
   
   const cycleStart = new Date(ANCHOR_DATE.getTime() + cycleIndex * 14 * 24 * 60 * 60 * 1000);
@@ -36,7 +41,7 @@ export function getContinuousCycleInfo(dateObj) {
   };
 
   return {
-    cycleNumber: cycleIndex + 1,
+    cycleNumber: Math.max(1, cycleIndex + 1),
     dayInCycle,
     cycleStartDate: formatDate(cycleStart),
     cycleEndDate: formatDate(cycleEnd),
@@ -441,7 +446,7 @@ export async function getFullMonthMatrixData(year, month) {
     month,
     daysInMonth,
     daysList,
-    cyclesList: Object.values(cyclesMap),
+    cyclesList: Object.values(cyclesMap).sort((a, b) => a.cycleNumber - b.cycleNumber),
     holidayConfig,
     stats: {
       totalDays: daysInMonth,
